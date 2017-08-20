@@ -1,0 +1,344 @@
+
+<!DOCTYPE HTML>
+<html><head><title>VAWT Windmill Calculator by Richard Lewis</title>
+
+<script language="JavaScript">
+//
+// **************************************************
+// * Savonious Windmill Calculator by Richard Lewis *
+// * @ http://poormanguides.com                     *
+// * last updated March 28, 2017                    *
+// **************************************************
+//
+document.bgColor="green"
+<!--HIDE
+function processData(form) {
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+for (var i = 0; i < form.items.length; i++) {
+if (form.items[i].checked) {
+break
+}
+}
+var voltbatt = form.items[i].value
+// *************************************************
+for (var i = 0; i < form.weather.length; i++) {
+if (form.weather[i].checked) {
+break
+}
+}
+var weather = form.weather[i].value;
+// *************************************************
+// *************************************************
+var wide = form.wide1.value;
+var wired = 1;
+var motors = 1;
+var tsr = .8;
+var wind = form.wind1.value;
+var height = form.height1.value;
+var amps = form.amps.value;
+var volts = form.volts.value;
+var rpmmotor = form.rpmmotor.value;
+var gear = form.gear1.value;
+var eff = form.eff.value * .01;
+var bladeeff = .2;
+var cutinmin = 11;
+// ********perform calculations********************
+var cutinrpm = Math.round(voltbatt/volts*(rpmmotor/gear));
+var rpm = Math.round((1056*wind*tsr)/(wide*3.141593));
+var cutinmph = (cutinrpm*wide*3.141593)/(1056*tsr);
+cutinmph = (parseInt(cutinmph*10))/10;
+var watts = parseInt(1.207 * .5 * ((wide)*0.0254) * (height*0.0254) * (wind * 0.447) * (wind * 0.447)* (wind * 0.447) * weather * bladeeff * eff);
+var ampbatt = (parseInt((watts / voltbatt)*10))/10 ;
+var ampmax = (parseInt(amps * weather * 2 * motors * wired * 10))/10;
+wattsmotor = parseInt(amps * weather * 2 * voltbatt * motors * wired);
+volts = volts * wired;
+//ampbatt = weather * weather * weather * amps;
+//cutinrpm = Math.round(cutinrpm * wired * (1 - (gear * .005)));
+//cutinmph = Math.round(cutinmph * wired * (1 - (gear * .005)));
+cutinrpm = Math.round(cutinrpm * wired);
+cutinmph = Math.round(cutinmph * wired);
+
+// ************** clean yellow warnings **********
+form.wide.style.backgroundColor = "white";
+form.height.style.background="white";
+form.amps.style.background="white";
+form.volts.style.background="white";
+form.rpmmotor.style.background="white";
+form.warnings.style.background="white";
+form.warnings.value = "Notice, the max amps the motor can withstand is higher than its rated capacity. This is due to the cooling effect of the wind!\n"; //alert(wind);
+
+// ************** error output section ************
+if (isNaN(wide)||wide<6||wide>96)
+  {
+  form.warnings.value = "";
+  form.warnings.style.background="yellow";
+  form.warnings.value = form.warnings.value + "The Blade Width must be a number between 6 and 96 inches.\n";
+  form.wide.style.background="yellow";
+  submitOK="false";
+  }
+if (isNaN(height)||height<6||height>120)
+  {
+  form.warnings.value = "";
+  form.warnings.style.background="yellow";
+  form.warnings.value = form.warnings.value + "The Blade Height must be a number between 6 and 120 inches.\n";
+  form.height.style.background="yellow";
+  submitOK="false";
+  }
+if (isNaN(wind)||wind<20||wind>50)
+  {
+  form.warnings.value = "";
+  form.warnings.style.background="yellow";
+  form.warnings.value = form.warnings.value + "The windspeed must be a number between 20 and 50 mph.\n";
+  submitOK="false";
+  }
+
+if (wattsmotor < watts && cutinmph < wind)
+  { form.warnings.value = "";
+  form.warnings.style.background="yellow";
+  form.warnings.value = form.warnings.value + "The motor selected could burn up in this wind! You will need to use a circuit breaker if you expect winds of this magnitude. You could also decrease blade diameter. Another option is to use a motor with a higher amp rating. Or you can use a higher voltage battery bank.\n"
+  form.amps.style.background="yellow";
+  }
+if (cutinmph > cutinmin)
+  {
+  form.wide.style.background="yellow";
+  form.rpmmotor.style.background="yellow";
+  form.volts.style.background="yellow";
+  form.warnings.style.background="yellow";
+  form.warnings.value = "";
+  form.warnings.value = form.warnings.value + "The cut in speed is too high! The motor needs to be geared up or the blade width should be decreased to speed up output. Another option is to use a motor with lower rpm rating and a higher voltage rating.\n"
+  }
+if (wind>200)
+  {
+  form.warnings.value = "";
+  form.warnings.style.background="yellow";
+  form.warnings.value = form.warnings.value + "Whatever! Do you live on Jupiter? Try a smaller windspeed.\n";
+  submitOK="false";
+  }
+
+//===canvas draw=====
+ctx.beginPath();
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+canvas.style.backgroundColor = "rgba(0, 0, 0, 1)";
+
+//====draw verical grid lines=====
+ctx.beginPath();
+ctx.lineWidth="1";
+ctx.strokeStyle="#222";
+for (var i = 50; i < 601; i+=55) {
+ctx.moveTo(i,0);
+ctx.lineTo(i,270);
+ctx.stroke();
+}
+
+//====draw horizontal grid lines=====
+for (var i = 30; i < 300; i+=30) {
+ctx.moveTo(50,i);
+ctx.lineTo(600,i);
+ctx.stroke();
+}
+
+//===draw the arrow====
+ctx.beginPath();
+ctx.lineCap="round";
+ctx.strokeStyle="yellow";
+ctx.lineWidth="3";
+ctx.moveTo(575,40);
+ctx.lineTo(595,7);
+ctx.lineTo(587,9);
+ctx.moveTo(595,7);
+ctx.lineTo(597,14);
+ctx.stroke();
+
+//===draw the curve====
+count1 = 230;
+ctx.beginPath();
+ctx.lineCap="round";
+ctx.strokeStyle="#FFF";
+ctx.lineWidth="3";
+count1 = 280 - (Math.round(300/wind) * cutinmph);
+
+for (var i = 50; i < 621; i+=20) {
+  ctx.lineTo(i,count1);
+  ctx.moveTo(i,count1);
+  ctx.stroke();
+  count1 = count1 * .86;
+}
+
+//====fill in text=====
+ctx.beginPath();
+ctx.fillStyle="yellow";
+ctx.lineWidth="1";
+ctx.font="18px Georgia";
+
+//==max watts label===
+ctx.fillText((Math.round(watts)) + " Watts",465,40);
+ctx.fillText("@ " + wind + " mph wind",445,60);
+ctx.fillText("@ " + rpm + " RPMs",445,80);
+ctx.fillText("@ " + ampbatt + " Amps",445,100);
+ctx.fillStyle="#AAA";
+ctx.fillText("Motor's Max Watts = " + wattsmotor ,255,170);
+ctx.fillText("Motor's Max Amps = " + ampmax,255,190);
+ctx.fillStyle="yellow";
+
+//==cutin details label===
+var cut1 = 290 - ((Math.round(300/wind)) * cutinmph);
+  if (cut1 > 250) {
+    cut1 = 250;
+  }
+ctx.fillText("Cutin @ " + cutinmph + " mph ",70,cut1);
+ctx.fillText("@ " + cutinrpm + " RPMs ",70,cut1+20);
+
+/*//==mark the max watts at top right==
+//ctx.arc(centreX,centreY,radius,startAngle,endAngle,0 for clockwise);
+ctx.beginPath();
+ctx.strokeStyle="yellow";
+ctx.lineWidth="3";
+ctx.moveTo(597,2);
+ctx.arc(598,3,4,0,6.28,0);
+ctx.stroke();
+*/
+
+//==wind speed label on left side==
+ct = wind/9;
+w = wind - ct;
+ctx.font="15px Georgia";
+ctx.fillText("MPH",7,15);
+for (var i = 30; i < 300; i+=30) {
+  ctx.fillText((Math.round(w)),16,i);
+  w -= ct;
+ }
+
+//==Watts label on bottom==
+ct = watts/10;
+w = watts - ct;
+ctx.font="25px Georgia";
+ctx.fillText("Watts",295,270);
+ctx.font="15px Georgia";
+for (var i = 550; i > 10; i-=55) {
+  ctx.fillText((Math.round(w)),i-13,290);
+  w -= ct;
+}
+
+}
+// *************************************************
+// *************************************************
+// *************************************************
+// *************************************************
+//Stop Hiding-->
+</script>
+
+<style>
+@charset “UTF-8″;
+body {
+  text-align: center;
+  //background-image: url("img/sky.jpg");
+  background-color: #AFCBE8;
+  color:#000000;
+  font-family: verdana;
+  font-size: 14px;
+  color: #ffffff;
+  line-height:24px;
+  letter-spacing:1px;
+}
+
+#program {
+  border-radius: 25px;
+  box-shadow: 20px 20px 30px black;
+  width: 100%;
+  min-width: 300px;
+  max-width: 700px;
+  background-color: #155B73;
+  border: 2px solid black;
+  //opacity:0.7;
+  //filter:alpha(opacity=70); /* For IE8 and earlier */
+
+}
+
+
+#compute {
+  border-radius: 25px;
+  box-shadow: 10px 10px 10px white;
+  width: 600px;
+  background-color: #333333;
+  border: 2px solid white;
+  //opacity:0.94;
+  //filter:alpha(opacity=94); /* For IE8 and earlier */
+}
+}
+
+</style>
+</head>
+<body onload="processData(form)">
+<center>
+<div style="text-align: left;"></div>
+<div id="program">
+<div style="text-align: left;"></div>
+<form style="margin-left: 1px; width: 100%;" name="form">
+<div style="text-align: left; margin-left: 0px; width: 100%;"></div>
+<h1 style="text-align: center; margin-left: 0px; width: 100%; color: rgb(255, 255, 102);" )=""><big>VAWT Wind Turbine Calculator</big></h1>
+<p style="text-align: center; margin-left: 0px; width: 100%; color: rgb(255, 255, 102);" )="">
+<font color="yellow"><span style="font-weight: bold; color: rgb(255, 102, 102);"></span></font>Battery
+voltage:
+<input name="items" value="13.4" checked="true" type="radio">12 <input name="items" value="26.1" type="radio">24 <input name="items" value="52.2" type="radio">48<br>
+<input name="items" value="120" type="radio">120
+<input name="items" value="240" type="radio">240
+(grid tie) <br>
+Weather conditions:
+<input name="weather" value=".7" type="radio">Hot
+<input name="weather" value="1" checked="true" type="radio">Moderate
+<input name="weather" value="1.4" type="radio">Cold<br>
+Blade Width:&nbsp;&nbsp;
+<input type="range" name="wide" min="6" max="96" value="36" step="1" onchange="form.wide1.value = this.value;processData(this.form)" />
+<input name="wide1" value="36" size="1" type="text"> inches<br>
+Blade Height:&nbsp;
+<input type="range" name="height" min="6" max="120" value="72" step="1" onchange="form.height1.value = this.value;processData(this.form)" />
+<input name="height1" value="72" size="1" type="text"> inches<br>
+Gear Ratio:&nbsp;
+<input type="range" name="gear" min="1" max="20" value="4" step="1" onchange="form.gear1.value = this.value;processData(this.form)" />
+<input name="gear1" value="4" size="1" type="text"> to 1<br>
+Wind Speed:
+<input type="range" name="wind" min="20" max="50" value="30" step="1" onchange="form.wind1.value = this.value;processData(this.form)" />
+<input name="wind1" value="30" size="1" type="text"> mph<br>
+<br>
+<input value="Blog" onclick="window.location='http://poormanguides.blogspot.ca';" type="button">
+&nbsp;&nbsp;&nbsp;&nbsp;
+<input name="compute" value="COMPUTE" style="font-size: 30px; font-weight: bold;background-color: rgb(180,180,250); font-color: white;" onclick="processData(this.form)" type="button">
+&nbsp;&nbsp;&nbsp;&nbsp;
+<input value="RESET FORM" name="reset" type="reset"></p>
+<canvas id="myCanvas" width="600" height="300"
+style="border:2px solid #d3d3d3;box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.8), 0 8px 24px 0 rgba(0, 0, 0, 0.79);">
+Your browser does not support the canvas element.
+</canvas>
+<br><br>
+Motor Amps:
+<input name="amps" value="17" size="4" type="text">&nbsp;&nbsp;&nbsp;&nbsp;
+Motor Volts:
+<input name="volts" value="130" size="4" type="text">&nbsp;&nbsp;&nbsp;&nbsp;
+Motor RPM:
+<input name="rpmmotor" value="1700" size="4" type="text"><br>
+Generator Efficiency:
+<input name="eff" value="50" size="2" type="text"><br>(DC=50%, magnetic alt=75%, AC induction=90%) <br>
+
+<br>
+<textarea name="warnings" cols="45" rows="6" style="color: rgb(0, 0, 0); font-family: Arial; font-weight: bold; font-size: 16px; background-color: rgb(255, 255, 255);"></textarea><br>
+<h3>SIMPLE NEW WAY TO ESCAPE THE POWER MONOPOLY</h3>
+How to Slash Your Power Bill by up to 75% (or more)<br>
+in less than 30 days - Guaranteed!<br>
+
+<div style="text-align: center;"><a href="http://d0c72fh5hmldgz59tkw8yzqbfd.hop.clickbank.net/?tid=BLOG-MAIN-BOX-SET"><img style="border: 1px solid ; width: 410px; height: 417px;box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.8), 0 8px 24px 0 rgba(0, 0, 0, 0.79);" alt="" src="http://rl-publishing.com/images/DIYhomeEnergyBox.png" /></a><br style="font-family: Arial;" /><br>
+<small><span style="color: rgb(0, 204, 204);">by
+Richard Lewis @ Poor Man's Guides copyright 2009-2017</span></small>
+</div>
+</form>
+</center>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-1105988-6");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+</body></html>
